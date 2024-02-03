@@ -62,7 +62,6 @@ def fingerhut_data_cleaner(og_df, defs):
              'ed_id',
              'event_name',
              'event_timestamp',
-             'ed_id',
              'journey_steps_until_end']]
 
 
