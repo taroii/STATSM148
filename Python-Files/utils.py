@@ -1,6 +1,37 @@
 import pandas as pd
 
+def has_correct_sequence(s):
+    """Function that checks if the sequence is correct.
+
+    Args:
+        s (list of ints): This is the journey steps until end variable in the Fingerhut data.
+
+    Returns:
+        Bool : This is a boolean that is True if the sequence is correct and False if it is not.
+    """
+    
+    s = list(s)
+    temp = s[0]
+    for i in range(1, len(s)):
+        if s[i] == temp+1:
+            temp = s[i]
+        elif s[i] == 1:
+            temp = 1
+        else :
+            print('error because temp is ', temp, ' and x[i] is ', s[i])
+            print('i is ', i)
+            return False
+    return True
+
 def correct_sequences(s):
+    """Function that corrects the sequences (journey steps until end) in the Fingerhut data.
+
+    Args:
+        s (list of ints): This is the journey steps until end variable in the Fingerhut data.
+
+    Returns:
+        seq : This is the corrected journey steps until end variable.
+    """
     seq = list(s)
     temp = s[0]
     for i in range(1, len(seq)):
@@ -31,7 +62,9 @@ def fingerhut_data_cleaner(og_df, defs):
              'ed_id',
              'event_name',
              'event_timestamp',
-             'ed_id']]
+             'ed_id',
+             'journey_steps_until_end']]
+
 
     df = df.drop_duplicates()
     df = df.reset_index(drop=True) # re-indexing
