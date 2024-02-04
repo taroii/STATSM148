@@ -64,8 +64,7 @@ def fingerhut_data_cleaner(og_df, defs):
              'event_timestamp',
              'journey_steps_until_end']]
 
-
-    df = df.drop_duplicates()
+    df = df.drop_duplicates(subset=['customer_id', 'account_id', 'ed_id', 'event_name', 'event_timestamp'])
     df = df.reset_index(drop=True) # re-indexing
 
     # Re-adding journey_steps_until_end (Axel's way)
@@ -106,3 +105,31 @@ def add_has_first_purchase(df):
     first_purchase_customers = df.groupby('customer_id')['stage'].apply(lambda x: 'First Purchase' in x.values).reset_index(name='has_first_purchase')
 
     return pd.merge(df, first_purchase_customers, on='customer_id')
+
+def split_sequences(df):
+    """Function that given the dataframe, returns a list of lists with the sequences of events
+
+    Args:
+        df (dataframe): The dataframe with the data
+
+    Returns:
+        result: A list of lists with the sequences of events
+    """
+    result = []
+    current_sequence = []
+    
+    for idx, step in enumerate(df['journey_steps_until_end']):
+        if step == 1:
+            # If the list is not empty, i.e. we have a new 1 in
+            # the journey we append the current sequence to the result
+            if current_sequence:
+                result.append(current_sequence)
+            current_sequence = [df['ed_id'].iloc[idx]]
+        else:
+            current_sequence.append(df['ed_id'].iloc[idx])
+    
+    # In case the last sequence is not empty we append the remaining sequence
+    if current_sequence:
+        result.append(current_sequence)
+    
+    return result
