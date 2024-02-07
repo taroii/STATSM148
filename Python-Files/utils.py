@@ -80,6 +80,12 @@ def fingerhut_data_cleaner(og_df, defs):
     
     df = pd.merge(df, df_stages, on ='event_name', how = 'left')
     
+    # Setting positive values for account_ids
+    df['account_id'] = remove_if(df, 'account_id')
+
+    # Setting positive values for customer_ids
+    df['customer_id'] = remove_if(df, 'customer_id')
+    
     return df
 
 def add_n_accounts(df):
