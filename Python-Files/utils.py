@@ -135,7 +135,7 @@ def split_sequences(df):
     return result
 
 
-def remove_if(a):
+def remove_if(df, col_name):
     """Function that removes the negative number of a customer_id
 
     Args:
@@ -144,7 +144,5 @@ def remove_if(a):
     Returns:
         str : number of a customer_id without the negative sign
     """
-    if a[0] == '-':
-        return a[1:]
-    else:
-        return a
+    values = df[col_name].apply(lambda x : (-1)*x if x < 0 else x).astype('int64')
+    return values
