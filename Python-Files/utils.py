@@ -97,9 +97,11 @@ def add_n_accounts(df):
     WHILE INTERPRETING THE RESULTS.
     
     """
-    account_counts = df.groupby('customer_id').size().reset_index(name='n_accounts')
+    # Counting the unique number of account_ids for each customer_id
+    unique_account_counts = df.groupby('customer_id')['account_id'].nunique().reset_index(name='n_accounts')
 
-    return pd.merge(df, account_counts, on='customer_id')
+    # Merging the unique account counts back into the original dataframe
+    return pd.merge(df, unique_account_counts, on='customer_id')
 
 def add_has_discover(df):
     """
