@@ -90,12 +90,7 @@ def fingerhut_data_cleaner(og_df, defs):
 
 def add_n_accounts(df):
     """
-    Adds a new column representing the number of accounts each customer has.
-    
-    IT IS IMPORTANT TO SEE THAT THIS FUNCTION COUNTS THE NUMBER OF ACCOUNTS A CUSTOMER HAS BUT 
-    THESE ACCOUNTS ARE NOT NECESSARILY DIFFERENT AND THEREFORE THERE MIGHT BE A MISUNDERSTANDING
-    WHILE INTERPRETING THE RESULTS.
-    
+    Adds a new column representing the number of accounts each customer has.    
     """
     # Counting the unique number of account_ids for each customer_id
     unique_account_counts = df.groupby('customer_id')['account_id'].nunique().reset_index(name='n_accounts')
