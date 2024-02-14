@@ -62,7 +62,8 @@ def fingerhut_data_cleaner(og_df, defs):
              'ed_id',
              'event_name',
              'event_timestamp',
-             'journey_steps_until_end']]
+             'journey_steps_until_end',
+             'milestone_number',]]
 
     df = df.drop_duplicates(subset=['customer_id', 'account_id', 'ed_id', 'event_name', 'event_timestamp'])
     df = df.reset_index(drop=True) # re-indexing
