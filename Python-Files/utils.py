@@ -64,6 +64,9 @@ def fingerhut_data_cleaner(og_df, defs):
              'event_timestamp',
              'journey_steps_until_end',
              'milestone_number',]]
+    
+    # Filling in missing milestone numbers with 0
+    df['milestone_number'] = df['milestone_number'].fillna(0)
 
     df = df.drop_duplicates(subset=['customer_id', 'account_id', 'ed_id', 'event_name', 'event_timestamp'])
     df = df.reset_index(drop=True) # re-indexing
@@ -110,6 +113,11 @@ def add_has_discover(df):
 def add_has_first_purchase(df):
     """
     Adds a new column representing whether a customer has made their first purchase. 
+    
+    WE ARE ADDING THE BOOLEAN VALUE WITHOUT TAKING CARE IF IT WAS A MILESTONE OR NOT I.E
+    WE ARE NOT TAKING INTO ACCOUNT THAT 'FIRST PURCHASE' COULD BE JUST BROWSING PRODUCTS AND NOT
+    ACTUALLY BUYING SOMETHING
+
     """
     first_purchase_customers = df.groupby('customer_id')['stage'].apply(lambda x: 'First Purchase' in x.values).reset_index(name='has_first_purchase')
 
