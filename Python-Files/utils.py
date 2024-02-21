@@ -262,7 +262,7 @@ def most_repeated_event(cust_df):
     Returns:
         str: The most repeated event in the sequence
     """
-    return cust_df['event_name'].mode()[0]
+    return cust_df['ed_id'].mode()[0]
 
 def get_first_n_events(cust_df, n = 10):
     """Function that returns the first 10 events of a sequence
