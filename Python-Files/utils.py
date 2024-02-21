@@ -66,7 +66,7 @@ def fingerhut_data_cleaner(og_df, defs):
              'milestone_number',]]
     
     # Filling in missing milestone numbers with 0
-    df['milestone_number'] = df['milestone_number'].fillna(0)
+    df.loc[:,['milestone_number']] = df['milestone_number'].copy().fillna(0)
 
     df = df.drop_duplicates(subset=['customer_id', 'account_id', 'ed_id', 'event_name', 'event_timestamp'])
     df = df.reset_index(drop=True) # re-indexing
@@ -151,7 +151,6 @@ def split_sequences(df):
     
     return result
 
-
 def remove_if(df, col_name):
     """Function that removes the negative number of a customer_id
 
@@ -163,3 +162,18 @@ def remove_if(df, col_name):
     """
     values = df[col_name].apply(lambda x : (-1)*x if x < 0 else x).astype('int64')
     return values
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
