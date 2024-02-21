@@ -188,18 +188,18 @@ def number_journeys_and_max(cus_df):
     ones = [i for i, x in enumerate(j_steps) if x == 1]
     return len(ones), max(j_steps)
 
-def has_order_shipped(cus_df):
-    """Function to check if a sequence has the correct format
+# def has_order_shipped(cus_df):
+#     """Function to check if a sequence has the correct format
 
-    Args:
-        seq (list): List of values
+#     Args:
+#         seq (list): List of values
 
-    Returns:
-        bool: True if the sequence has the correct format, False otherwise
-    """
-    # 28 is the id of the event order_shipped
-    return 28 in list(cus_df['ed_id'])
-    #return cus_df['ed_id'].isin([28]).any()
+#     Returns:
+#         bool: True if the sequence has the correct format, False otherwise
+#     """
+#     # 28 is the id of the event order_shipped
+#     return 28 in list(cus_df['ed_id'])
+#     #return cus_df['ed_id'].isin([28]).any()
 
 def average_length_seq(cust_df):
     """Function to add the average length of the sequences to the dataset
@@ -281,7 +281,7 @@ def get_first_n_events(cust_df, n = 10):
 def group_by_approach(cust_df):
     # applying all the functions to get the data
     num_journeys, max_journey = number_journeys_and_max(cust_df)
-    order_shipped = has_order_shipped(cust_df)
+    #order_shipped = has_order_shipped(cust_df)
     discover = has_discover(cust_df)
     milestones, max_milestone = which_milestones(cust_df)
     numb_accs = number_accounts(cust_df)
@@ -292,7 +292,7 @@ def group_by_approach(cust_df):
     # Creating the new data frame
     new_df = pd.DataFrame({'num_journeys': num_journeys,
                            'max_journey': max_journey,
-                           'order_shipped': order_shipped,
+                           #'order_shipped': order_shipped,
                            'discover': discover, 
                            'approved_credit': milestones[0],
                            'first_purchase': milestones[1],
