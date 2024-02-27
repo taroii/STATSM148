@@ -64,7 +64,8 @@ def fingerhut_data_cleaner(og_df, defs):
              'event_name',
              'event_timestamp',
              'journey_steps_until_end',
-             'milestone_number',]]
+             'milestone_number',
+             'journey_id',]]
     
     # Filling in missing milestone numbers with 0
     df.loc[:,['milestone_number']] = df['milestone_number'].copy().fillna(0)
@@ -298,6 +299,13 @@ def get_first_n_events(cust_df, n = 10):
     #events += [np.nan] * (10 - len(events))
     return np.array(events)
 
+def get_time_since_last_event(cust_df, n=10):
+    cust_df = cust_df.head(n)
+    x = cust_df.groupby(['customer_id', 'journey_id'])['event_timestamp'].diff()
+    x = x.fillna(pd.Timedelta(seconds=0))
+    x = x.dt.total_seconds()
+    return np.array(x)
+
 def which_milestones(cust_df):
     """Function that returns in a tuple in the following sequence the next statemens:
     - If the customer has applied for credit and it has been approved (milestone 1)
@@ -450,5 +458,9 @@ def get_classification_dataset(data, event_defs, n_events = 10):
     # Adding the first n events
     x = list(df.groupby('customer_id').apply(get_first_n_events, n = n_events))
     new_df['first_' + str(n_events) + '_events'] = x
+    
+    # Adding the time of this first n events
+    x = list(df.groupby('customer_id').apply(get_time_since_last_event, n = n_events))
+    new_df['time_since_last_event'] = x
     
     return new_df
