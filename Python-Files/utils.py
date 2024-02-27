@@ -296,7 +296,7 @@ def get_first_n_events(cust_df, n = 10):
     """
     events = cust_df['ed_id'].head(n).tolist()
     # Pad with np.nan if the sequence has fewer than 10 events
-    #events += [np.nan] * (10 - len(events))
+    events += [0] * (n - len(events))
     return np.array(events)
 
 def get_time_since_last_event(cust_df, n=10):
@@ -304,6 +304,7 @@ def get_time_since_last_event(cust_df, n=10):
     x = cust_df.groupby(['customer_id', 'journey_id'])['event_timestamp'].diff()
     x = x.fillna(pd.Timedelta(seconds=0))
     x = x.dt.total_seconds()
+    x = x.tolist() + [0] * (n - len(x))
     return np.array(x)
 
 def which_milestones(cust_df):
