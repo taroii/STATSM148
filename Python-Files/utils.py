@@ -165,17 +165,6 @@ def remove_if(df, col_name):
     values = df[col_name].apply(lambda x : (-1)*x if x < 0 else x).astype('int64')
     return values
 
-def has_more_one_journey(j_steps):
-    """Function to check if a sequence has repeated values
-
-    Args:
-        seq (list): List of values
-
-    Returns:
-        bool: True if there are repeated values, False otherwise
-    """
-    return len(j_steps) != len(set(j_steps))
-
 def number_journeys_and_max(cus_df):
     """Function to check the number of journeys in a sequence
 
@@ -189,18 +178,49 @@ def number_journeys_and_max(cus_df):
     ones = [i for i, x in enumerate(j_steps) if x == 1]
     return len(ones), max(j_steps)
 
-# def has_order_shipped(cus_df):
-#     """Function to check if a sequence has the correct format
+def has_discover(cust_df):
+    """Function to check if a sequence has the discovery event
 
-#     Args:
-#         seq (list): List of values
+    Args:
+        cust_df (pd.DataFrame): Dataset of a certain customer (not all the dataset, just one customer)
 
-#     Returns:
-#         bool: True if the sequence has the correct format, False otherwise
-#     """
-#     # 28 is the id of the event order_shipped
-#     return 28 in list(cus_df['ed_id'])
-#     #return cus_df['ed_id'].isin([28]).any()
+    Returns:
+        bool: True if the sequence has the discovery event, False otherwise
+    """
+    return 'Discover' in list(cust_df['stage'])
+
+def number_accounts(cust_df):
+    """Function to add the number of accounts to the dataset
+
+    Args:
+        cust_df (pd.DataFrame): Dataset of a certain customer (not all the dataset, just one customer)
+
+    Returns:
+        pd.DataFrame: Dataset with the number of accounts in a new column
+    """
+    return cust_df['account_id'].nunique()
+
+def has_more_one_journey(j_steps):
+    """Function to check if a sequence has repeated values
+
+    Args:
+        seq (list): List of values
+
+    Returns:
+        bool: True if there are repeated values, False otherwise
+    """
+    return len(j_steps) != len(set(j_steps))
+
+def most_repeated_event(cust_df):
+    """Function that returns the most repeated event in a sequence
+
+    Args:
+        cust_df (pd.DataFrame): Dataset of a certain customer (not all the dataset, just one customer)
+
+    Returns:
+        str: The most repeated event in the sequence
+    """
+    return cust_df['ed_id'].mode()[0]
 
 def average_length_seq(cust_df):
     """Function to add the average length of the sequences to the dataset
@@ -216,27 +236,76 @@ def average_length_seq(cust_df):
     sequences = split_sequences(new_df)
     return np.mean([len(seq) for seq in sequences])
 
-def number_accounts(cust_df):
-    """Function to add the number of accounts to the dataset
+def has_prospecting(cust_df):
+    """Function to check if a sequence has the prospecting event
 
     Args:
         cust_df (pd.DataFrame): Dataset of a certain customer (not all the dataset, just one customer)
 
     Returns:
-        pd.DataFrame: Dataset with the number of accounts in a new column
+        bool: True if the sequence has the prospecting event, False otherwise
     """
-    return cust_df['account_id'].nunique()
+    evnts = list(cust_df['ed_id'])
+    return 20 in evnts or 21 in evnts or 24 in evnts
 
-def has_discover(cust_df):
-    """Function to check if a sequence has the discovery event
+def has_pre_application(cust_df):
+    """Function to check if a sequence has the pre-application event
 
     Args:
         cust_df (pd.DataFrame): Dataset of a certain customer (not all the dataset, just one customer)
 
     Returns:
-        bool: True if the sequence has the discovery event, False otherwise
+        bool: True if the sequence has the pre-application event, False otherwise
     """
-    return 'Discover' in list(cust_df['stage'])
+    return 22 in list(cust_df['ed_id'])
+
+def initial_device(cust_df):
+    """Function to get the initial device of a customer
+    """
+    events = set(cust_df['event_name'])
+    phone = ['phone' in event for event in events]
+    web = ['web' in event for event in events]
+    
+    if np.array(phone).any() and np.array(web).any():
+        return 3
+    elif np.array(phone).any():
+        return 1
+    elif np.array(web).any():
+        return 2
+    
+def has_approved(cust_df):
+    """Function to check if a sequence has the approved event
+
+    Args:
+        cust_df (pd.DataFrame): Dataset of a certain customer (not all the dataset, just one customer)
+
+    Returns:
+        bool: True if the sequence has the approved event, False otherwise
+    """
+    x = set(cust_df['ed_id'])
+    return 15 in x or 12 in x
+
+def get_first_n_events(cust_df, n = 10):
+    """Function that returns the first 10 events of a sequence
+
+    Args:
+        cust_df (pd.DataFrame): Dataset of a certain customer (not all the dataset, just one customer)
+
+    Returns:
+        list: The first 10 events of the sequence, padded with np.nan if necessary
+    """
+    events = cust_df['ed_id'].head(n).tolist()
+    # Pad with np.nan if the sequence has fewer than 10 events
+    events += [0] * (n - len(events))
+    return np.array(events)
+
+def get_time_since_last_event(cust_df, n=10):
+    cust_df = cust_df.head(n)
+    x = cust_df.groupby(['customer_id', 'journey_id'])['event_timestamp'].diff()
+    x = x.fillna(pd.Timedelta(seconds=0))
+    x = x.dt.total_seconds()
+    x = x.tolist() + [0] * (n - len(x))
+    return np.array(x)
 
 def which_milestones(cust_df):
     """Function that returns in a tuple in the following sequence the next statemens:
@@ -254,47 +323,100 @@ def which_milestones(cust_df):
     max_milestone = max(milestones)
     return (1 in milestones, 2 in milestones, 3 in milestones, 4 in milestones, 5 in milestones, 6 in milestones), max_milestone
 
-def most_repeated_event(cust_df):
-    """Function that returns the most repeated event in a sequence
+# Functions for time
+def get_idxs(cust_df, stage, milestone = -1):
+    """Function to get the indexes of a certain stage
 
     Args:
         cust_df (pd.DataFrame): Dataset of a certain customer (not all the dataset, just one customer)
 
     Returns:
-        str: The most repeated event in the sequence
+        list: List with the indexes of a certain stage
     """
-    return cust_df['ed_id'].mode()[0]
+    if milestone != -1:
+        return list(cust_df[cust_df['milestone_number'] == milestone].index)
+    
+    return list(cust_df[cust_df['stage'] == stage].index)
 
-def get_first_n_events(cust_df, n = 10):
-    """Function that returns the first 10 events of a sequence
+def time_in_discover(cust_df, seconds_differences):
+    """Function to calculate the time between events
 
     Args:
         cust_df (pd.DataFrame): Dataset of a certain customer (not all the dataset, just one customer)
 
     Returns:
-        list: The first 10 events of the sequence, padded with np.nan if necessary
+        list: List with the time between events
     """
-    events = cust_df['ed_id'].head(n).tolist()
-    # Pad with np.nan if the sequence has fewer than 10 events
-    #events += [np.nan] * (10 - len(events))
-    return np.array(events)
+    idxs = get_idxs(cust_df, 'Discover')
+    
+    time_in = []
+    for idx in idxs:
+        if idx + 1 < len(seconds_differences):
+            time_in.append(seconds_differences[idx + 1])
+        else:
+            time_in.append(0)
+    return sum(time_in)
+
+def time_in_apply(cust_df, seconds_differences):
+    """Function to calculate the time between events
+
+    Args:
+        cust_df (pd.DataFrame): Dataset of a certain customer (not all the dataset, just one customer)
+
+    Returns:
+        list: List with the time between events
+    """
+    idxs = get_idxs(cust_df, 'Apply for Credit')
+    
+    time_in = []
+    for idx in idxs:
+        if idx + 1 < len(seconds_differences):
+            time_in.append(seconds_differences[idx + 1])
+        else:
+            time_in.append(0)
+    return sum(time_in)
+
+def time_reach_milestone1(cust_df, seconds_differences):
+    """Function to calculate the time between events
+
+    Args:
+        cust_df (pd.DataFrame): Dataset of a certain customer (not all the dataset, just one customer)
+
+    Returns:
+        list: List with the time between events
+    """
+    idxs = get_idxs(cust_df, 'Apply for Credit', 1)
+    
+    # sum all the times before the milestone
+    return sum(seconds_differences[1:idxs[0]+1])
 
 def group_by_approach(cust_df):
+    cust_df = cust_df.reset_index(drop=True)
     # applying all the functions to get the data
     num_journeys, max_journey = number_journeys_and_max(cust_df)
-    #order_shipped = has_order_shipped(cust_df)
     discover = has_discover(cust_df)
-    milestones, max_milestone = which_milestones(cust_df)
     numb_accs = number_accounts(cust_df)
     more_one_journey = has_more_one_journey(cust_df['journey_steps_until_end'])
     repeated_event = most_repeated_event(cust_df)
     avg_length_journey = average_length_seq(cust_df)
+    has_pros = has_prospecting(cust_df)
+    pre_applic = has_pre_application(cust_df)
+    device = initial_device(cust_df)
+    x = cust_df['event_timestamp'].diff().dt.total_seconds().tolist()
+    time_disc = time_in_discover(cust_df, x)
+    time_apply = time_in_apply(cust_df, x)
+    # time_milestone1 = time_reach_milestone1(cust_df, x)
+    
+    milestones, max_milestone = which_milestones(cust_df)
     
     # Creating the new data frame
     new_df = pd.DataFrame({'num_journeys': num_journeys,
                            'max_journey': max_journey,
-                           #'order_shipped': order_shipped,
                            'discover': discover, 
+                           'number_accounts': numb_accs,
+                           'one_more_journey': more_one_journey,
+                           'most_repeated_event': repeated_event,
+                           'average_length_seq': avg_length_journey,
                            'approved_credit': milestones[0],
                            'first_purchase': milestones[1],
                            'account_activitation': milestones[2],
@@ -302,14 +424,28 @@ def group_by_approach(cust_df):
                            'downpayment_cleared': milestones[4],
                            'order_ships': milestones[5],
                            'max_milestone': max_milestone,
-                           'number_accounts': numb_accs,
-                           'one_more_journey': more_one_journey,
-                           'most_repeated_event': repeated_event,
-                           'average_length_seq': avg_length_journey,
+                            'has_prospecting': has_pros,
+                            'has_pre_application': pre_applic,
+                            'initial_device': device,
+                            'time_in_discover': time_disc,
+                            'time_in_apply': time_apply,
+                            #'time_reach_milestone_1': time_milestone1,
                            'index':[0]})
     return new_df    
 
 def get_classification_dataset(data, event_defs, n_events = 10):
+    """This function is the one that gives you the final dataset with the features and the target variable
+
+    Args:
+        data (_type_): the original dataset (without any cleaning or anything like that)
+        event_defs (_type_): the event definitions dataset
+        n_events (int, optional): Number of events in the last column. Defaults to 10.
+
+    Returns:
+        df : The final dataset with the features and the target variable
+    """
+    
+    
     df = fingerhut_data_cleaner(data, event_defs)
     # drop the promotion_created event
     idxs = list(df[df['event_name'] == 'promotion_created'].index)
@@ -320,8 +456,12 @@ def get_classification_dataset(data, event_defs, n_events = 10):
     new_df = df.groupby('customer_id').apply(group_by_approach)
     new_df.drop(columns=['index'], inplace=True)
     
-    # Adding the first 10 events
+    # Adding the first n events
     x = list(df.groupby('customer_id').apply(get_first_n_events, n = n_events))
     new_df['first_' + str(n_events) + '_events'] = x
+    
+    # Adding the time of this first n events
+    x = list(df.groupby('customer_id').apply(get_time_since_last_event, n = n_events))
+    new_df['time_since_last_event'] = x
     
     return new_df
