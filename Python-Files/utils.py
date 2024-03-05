@@ -64,8 +64,8 @@ def fingerhut_data_cleaner(og_df, defs):
              'event_name',
              'event_timestamp',
              'journey_steps_until_end',
-             'milestone_number',
-             'journey_id',]]
+             'journey_id',
+             'milestone_number',]]
     
     # Filling in missing milestone numbers with 0
     df.loc[:,['milestone_number']] = df['milestone_number'].copy().fillna(0)
