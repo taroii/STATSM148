@@ -4,3 +4,5 @@ export.csv
 merged_with_purchase.csv
 subset.csv
 smaller_sample.csv
+export_clean.csv
+export_n_20.csv
